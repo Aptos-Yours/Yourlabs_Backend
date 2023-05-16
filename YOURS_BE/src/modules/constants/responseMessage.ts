@@ -6,6 +6,7 @@ export default {
   NO_USER: '존재하지 않는 유저',
   NO_IMAGE: '이미지가 없습니다.',
   UNAUTHORIZED: '권한이 없습니다.',
+  DB_ERROR: 'DB 오류',
 
   // 회원가입 및 로그인
   SIGNUP_SUCCESS: '회원 가입 성공',
@@ -25,6 +26,11 @@ export default {
   VALID_TOKEN: '유효한 토큰입니다.',
   EMPTY_TOKEN: '토큰 값이 없습니다.',
 
+  //* 웹3
+  IPFS_ERROR: 'ipfs 오류입니다.',
+  META_ERROR: '메타 데이터 업로드 실패',
+  BENEFIT_DATA_ERROR: '혜택 데이터 업로드 실패',
+
   //마이 페이지
   READ_USER_INFO_SUCCESS: '유저 정보 조회 성공',
   READ_CATEGORY_INFO_SUCCESS: '카테고리 별 정보 조회 성공',
@@ -34,6 +40,9 @@ export default {
   UPDATE_EMAIL_SUCCESS: '유저의 이메일 수정 성공',
   UPDATE_NICKNAME_SUCCESS: '유저의 닉네임 수정 성공',
   SEND_AUTH_EMAIL_SUCCESS: '이메일 인증 발송 성공',
+  GET_QUESTINFO_SUCCESS: '퀘스트 완료 여부 조회 성공',
+  UPDATE_QUESTINFO_SUCCESS: '퀘스트 완료 여부 업데이트 성공',
+  UPDATE_SECRET_SUCCESS: '유저의 secret 수정 성공',
 
   //NFT
   READ_NFT_DETAIL_INFO_SUCCESS: 'NFT 상세 정보 조회 성공',
@@ -41,7 +50,7 @@ export default {
   READ_NFT_FAIL: 'NFT 조회 실패',
   CREATE_NFT_SUCCESS: 'NFT 생성 성공',
   SEND_AUTH_MAIL_SUCCESS: 'NFT 인증 이메일 발송 성공',
-  VERIFY_EMAIL_AUTH_SUCCESS: 'NFT 이메일 인증 성공',
+  VERIFY_EMAIL_AUTH_SUCCESS: 'NFT 이메일 인증 및 민팅 성공',
   VERIFY_EMAIL_AUTH_FAIL: 'NFT 이메일 인증 실패',
   READ_NFT_ID_LIST_SUCCESS: 'NFT Id 리스트 조회 성공',
   READ_CREATE_NFT_ID_LIST_SUCCESS: '생성한 NFT Id 리스트 조회 성공',
@@ -54,12 +63,38 @@ export default {
   DELETE_NFT_REWARD_SUCCESS: 'NFT 혜택 삭제 성공',
   TRANSFER_NFT_SUCCESS: 'NFT 옮겨가기 성공',
   READ_NFT_FLAG_LIST_SUCCESS: 'NFT 전송 유무 리스트 조회 성공',
+  READ_TO_BE_INTEGRATED_NFTS_SUCCESS: '통합될 NFT 확인 정보 조회 성공',
+  READ_NFT_ADDRESS_FAIL: 'NFT 주소가 없습니다.',
+  PUBLISH_NFT_SUCCESS: 'NFT 발행 성공',
+  UPDATE_NFT_BENEFIT_SUCCESS: 'NFT 혜택 수정 및 발행 성공',
+  CREATE_INTEGRATED_NFT_SUCCESS: '통합 NFT 생성 성공',
+  UPDATE_INTEGRATED_NFT_SUCCESS: '통합 NFT 수정 성공',
+  READ_INTEGRATED_NFT_FAIL: '유저가 소유하고 있지 않는 통합 NFT입니다.',
+  READ_INTEGRATED_NFT_DETAIL_SUCCESS: '통합 NFT 상세 정보 조회 성공',
+  READ_INTEGRATED_NFT_SUCCESS: '유저가 가진 통합 NFT 리스트 조회 성공',
+  DELETE_INTEGRATED_NFT_SUCCESS: '통합 NFT 삭제 성공',
+  READ_NFT_ADMIN_REWARD_INFO_SUCCESS: '관리자용 NFT 혜택 조회 성공',
+  READ_NFT_ADMIN_REWARD_DETAIL_INFO_SUCCESS: '관리자용 NFT 혜택 상세 조회 성공',
+  DUPLICATE_REQUEST: '중복된 요청입니다.',
+  IS_LOADING_NFT: '배포 중인 NFT입니다.',
+  IS_DEPLOYED_NFT: '이미 배포된 NFT 입니다.',
+  UNSIGNED_OP_CREATED: 'Sign이 필요한 op객체가 반환되었습니다.',
+  AA_ACCOUNT_CREATED: 'AA account생성이 완료되었습니다.',
 
   //ADMIN
   READ_AUTH_PEOPLE_SUCCESS: '들어온 인증 요청 조회 성공',
   READ_AUTH_PEOPLE_DETAIL_SUCCESS: '인증 요청 상세보기 조회 성공',
   APPROVE_NFT_SUCCESS: 'NFT 사진 인증 승인 성공',
   APPROVE_NFT_FAIL: 'NFT 사진 인증 거절',
+
+  //USER
+  GET_WALLETINFO_SUCCESS: '지갑 정보 조회에 성공하였습니다.',
+  READ_YOURS_WALLET_SUCCESS: 'yours 지갑 주소 조회 성공',
+
+  //알림톡
+  SEND_NOTIFICATION_MESSAGE_SUCCESS: '알림톡이 성공적으로 전송되었습니다.',
+  SEND_NOTIFICATION_MESSAGE_FAIL:
+    '알림톡 발송에 실패하였습니다. 메시지를 확인해주세요.',
 
   // 서버 내 오류
   INTERNAL_SERVER_ERROR: '서버 내 오류',

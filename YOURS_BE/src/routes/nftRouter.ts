@@ -33,6 +33,7 @@ router.post(
   auth,
   nftController.createNft,
 );
+
 router.post(
   '/email',
   [body('nftId').notEmpty(), body('email').isEmail().notEmpty()],
@@ -102,4 +103,13 @@ router.delete(
 );
 
 router.get('/send', auth, nftController.getNftMoveFlagList);
+
+router.post(
+  '/publish',
+  [body('nftId').isNumeric().notEmpty()],
+  errorValidator,
+  auth,
+  nftController.publishNFT,
+);
+
 export default router;

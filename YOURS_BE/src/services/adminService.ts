@@ -105,4 +105,48 @@ const rejectNft = async (id: number) => {
     throw error;
   }
 };
-export default { getRequestUser, approveNft, rejectNft };
+
+const getAdminNftRewardList = async (nftId: number) => {
+  try {
+    const rewards = await prisma.admin_reward.findMany({
+      where: {
+        nftId: nftId,
+      },
+      select: {
+        id: true,
+        nftId: true,
+        rewardName: true,
+        description: true,
+      },
+    });
+    return rewards;
+  } catch (error) {
+    throw error;
+  }
+};
+
+const getAdminNftRewardDetail = async (rewardId: number) => {
+  try {
+    const rewardDetail = await prisma.admin_reward.findFirst({
+      where: {
+        id: rewardId,
+      },
+      select: {
+        id: true,
+        rewardName: true,
+        description: true,
+      },
+    });
+    return rewardDetail;
+  } catch (error) {
+    throw error;
+  }
+};
+
+export default {
+  getRequestUser,
+  approveNft,
+  rejectNft,
+  getAdminNftRewardList,
+  getAdminNftRewardDetail,
+};

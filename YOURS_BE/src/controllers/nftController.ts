@@ -6,13 +6,9 @@ import nftService from '../services/nftService';
 import { sendMail } from '../modules/mail';
 import { saveMailAuthCode, verifyCode } from '../modules/code';
 import { decodeByAES256, encodeByAES56 } from '../modules/crypto';
-import {
-  deployNFT,
-  mintNFT,
-  uploadImgIpfs,
-  uploadMetaIpfs,
-} from '../contract/contract';
+import { uploadBenefitIpfs, uploadMetaIpfs } from '../contract/ipfs';
 import config from '../config/index';
+import { deployAptosNFT, mintAptosNFT } from '../contract/aptosContract';
 
 const ethers = require('ethers');
 
@@ -205,10 +201,29 @@ const verifyMailForNft = async (
           fail(statusCode.BAD_REQUEST, responseMessage.VERIFY_EMAIL_AUTH_FAIL),
         );
     }
-    const data = await nftService.verifyMailForNft(
+    const getNftInfo = await nftService.getNftInfo(+userInfo.nftId);
+    const messageInfo = await nftService.getUserAndNftInfo(
+      +userInfo.userId,
+      +getNftInfo.id,
+      'NFT_MINTING_SUCCESS',
+    );
+
+    const mintNftInfo = await mintAptosNFT(
+      getNftInfo.nftName!,
+      messageInfo.name!,
+    );
+    const verifyInfo = await nftService.verifyMailForNft(
       userInfo.userId,
       userInfo.nftId,
+      mintNftInfo!.mintId,
     );
+
+    const data = {
+      userId: verifyInfo.userId,
+      nftId: verifyInfo.nftId,
+      transactionHash: mintNftInfo!.mintTxHash,
+      date: mintNftInfo!.date,
+    };
     return res
       .status(statusCode.OK)
       .send(
@@ -400,74 +415,6 @@ const getNftRewardDetailInfo = async (
   }
 };
 
-//* [PATCH] NFT 옮겨가기
-
-const transferNFT = async (req: Request, res: Response, next: NextFunction) => {
-  try {
-    const userId = req.body.id;
-    const { walletAddress } = req.body;
-    const { nftId } = req.params;
-
-    //* 파일 원본 가져오기
-    //const originalFile = await nftService.convertURLtoFile(+nftId);
-
-    //* NFT 정보 가져오기
-    const getNftInfo = await nftService.getNftInfo(+nftId);
-
-    //* 이미지 파일 및 nft 정보 ipfs에 올리기
-    //const image = await uploadImgIpfs(originalFile);
-
-    const nftInfoToIpfs = await uploadMetaIpfs(
-      getNftInfo.nftName,
-      getNftInfo.description,
-      getNftInfo.image,
-    );
-    //* NFT가 배포되어 있는지 확인
-    const existNftAddress = await nftService.existNftAddress(+nftId);
-
-    //* 배포된 NFT가 아니라면, NFT 정보를 가지고 배포 후, 민팅
-    if (!existNftAddress) {
-      const deployedNft = await deployNFT(getNftInfo.nftName, nftInfoToIpfs);
-
-      //* 배포된 NFT address를 DB에 저장
-      await nftService.saveNftAddress(+nftId, deployedNft);
-
-      const nftContract = new ethers.Contract(
-        deployedNft,
-        benefitData.abi,
-        provider,
-      );
-      //* 민팅
-      const data = await mintNFT(nftContract, walletAddress);
-
-      //* 마이페이지에 NFT 상태 변경
-      await nftService.updateNftFlag(userId, +nftId);
-      return res
-        .status(statusCode.OK)
-        .send(
-          success(statusCode.OK, responseMessage.TRANSFER_NFT_SUCCESS, data),
-        );
-    }
-
-    //* 배포된 NFT라면, 민팅
-    const nftContract = new ethers.Contract(
-      existNftAddress,
-      benefitData.abi,
-      provider,
-    );
-
-    const data = await mintNFT(nftContract, walletAddress);
-
-    //* 마이페이지에 NFT 상태 변경
-    await nftService.updateNftFlag(userId, +nftId);
-    return res
-      .status(statusCode.OK)
-      .send(success(statusCode.OK, responseMessage.TRANSFER_NFT_SUCCESS, data));
-  } catch (error) {
-    next(error);
-  }
-};
-
 //* [DELETE] NFT 혜택 삭제
 
 const deleteNftReward = async (
@@ -510,6 +457,48 @@ const getNftMoveFlagList = async (
     next(error);
   }
 };
+
+const publishNFT = async (req: Request, res: Response, next: NextFunction) => {
+  const userId = req.body.id;
+  const { nftId } = req.body;
+  try {
+    //* NFT 생성자인지 확인하기
+    const checkNftCreator = await nftService.checkNftCreator(+userId, +nftId);
+    if (checkNftCreator) {
+      const nftInfo = await nftService.getNftInfoWithReward(+nftId);
+      const nftInfoIpfs = await uploadMetaIpfs(
+        nftInfo.nftName,
+        nftInfo.description,
+        nftInfo.image,
+      );
+
+      await nftService.checkDeployedState(+nftId);
+
+      const benefitInfoIpfs = await uploadBenefitIpfs(nftInfo.benefit);
+      await nftService.startLoading(+nftId);
+      const data = await deployAptosNFT(
+        nftInfo.nftName!,
+        nftInfoIpfs,
+        benefitInfoIpfs,
+      );
+
+      await nftService.updateNftInfo(
+        +nftId,
+        data.address.toString(),
+        data.date,
+      );
+      await nftService.equalReward(+nftId);
+      await nftService.finishLoading(+nftId);
+      return res
+        .status(statusCode.OK)
+        .send(
+          success(statusCode.OK, responseMessage.PUBLISH_NFT_SUCCESS, data),
+        );
+    }
+  } catch (error) {
+    next(error);
+  }
+};
 export default {
   getInfoByType,
   getNftDetailInfo,
@@ -524,7 +513,7 @@ export default {
   createReward,
   updateRewardInfo,
   getNftRewardDetailInfo,
-  transferNFT,
   deleteNftReward,
   getNftMoveFlagList,
+  publishNFT,
 };

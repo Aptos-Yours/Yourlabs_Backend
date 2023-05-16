@@ -7,55 +7,144 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model user {
-  id            Int             @id @unique(map: "id") @default(autoincrement())
-  snsId         String?         @unique(map: "sns_id") @db.VarChar(30)
-  name          String?         @db.VarChar(30)
-  profileImage  String?         @db.VarChar(300)
-  email         String          @db.VarChar(50)
-  phone         String?         @db.VarChar(45)
-  social        String?         @db.VarChar(30)
-  refreshToken  String?         @db.VarChar(200)
-  isMarketing   Boolean
-  createdAt     DateTime        @default(now())
-  updatedAt     DateTime        @updatedAt
-  admin         admin[]
-  user_has_nfts user_has_nfts[]
+model admin {
+  id           Int       @id @unique(map: "id") @default(autoincrement())
+  userId       Int
+  nftId        Int
+  image        String    @db.VarChar(800)
+  deletedAt    DateTime? @db.DateTime(0)
+  rejectReason String?   @db.VarChar(200)
+  nfts         nfts      @relation(fields: [nftId], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "admin_nfts_id_fk")
+  user         user      @relation(fields: [userId], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "admin_user_id_fk")
+
+  @@index([nftId], map: "admin_nfts_id_fk")
+  @@index([userId], map: "admin_user_id_fk")
+}
+
+model admin_reward {
+  id          Int       @id @unique(map: "admin_reward_id_uindex") @default(autoincrement())
+  nftId       Int?
+  rewardName  String?   @db.VarChar(100)
+  description String?   @db.Text
+  createdAt   DateTime? @db.DateTime(0)
+  updatedAt   DateTime? @db.DateTime(0)
+  nfts        nfts?     @relation(fields: [nftId], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "admin_reward_nfts_id_fk")
+
+  @@index([nftId], map: "admin_reward_nfts_id_fk")
+}
+
+model integrated_has_nfts {
+  id              Int              @id @unique(map: "id") @default(autoincrement())
+  integratedNftId Int?
+  nftId           Int?
+  integrated_nfts integrated_nfts? @relation(fields: [integratedNftId], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "integrated_has_nfts_integrated_nfts_id_fk")
+  nfts            nfts?            @relation(fields: [nftId], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "integrated_has_nfts_nfts_id_fk")
+
+  @@index([integratedNftId], map: "integrated_has_nfts_integrated_nfts_id_fk")
+  @@index([nftId], map: "integrated_has_nfts_nfts_id_fk")
+}
+
+model integrated_nfts {
+  id                       Int                        @id @unique(map: "id") @default(autoincrement())
+  creatorId                Int?
+  chainType                String?                    @db.VarChar(10)
+  tokenId                  Int?
+  contractAddress          String?                    @db.VarChar(60)
+  createdAt                DateTime?                  @default(now())
+  updatedAt                DateTime?
+  integrated_has_nfts      integrated_has_nfts[]
+  user                     user?                      @relation(fields: [creatorId], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "integrated_nfts_user_id_fk")
+  user_has_integrated_nfts user_has_integrated_nfts[]
+
+  @@index([creatorId], map: "integrated_nfts_user_id_fk")
 }
 
 model nfts {
-  id            Int             @id @unique(map: "id") @default(autoincrement())
-  ownerId       Int?
-  nftName       String?         @db.VarChar(100)
-  image         String?         @db.VarChar(800)
-  description   String?         @db.Text
-  authType      Int?
-  options       String?         @db.VarChar(100)
-  nftAddress    String?         @db.VarChar(50)
-  createdAt     DateTime?       @default(now())
-  updatedAt     DateTime?       @updatedAt
-  admin         admin[]
-  reward        reward[]
-  user_has_nfts user_has_nfts[]
+  id                  Int                   @id @unique(map: "id") @default(autoincrement())
+  ownerId             Int?
+  nftName             String?               @db.VarChar(100)
+  image               String?               @db.VarChar(800)
+  description         String?               @db.Text
+  authType            Int?
+  options             String?               @db.VarChar(100)
+  chainType           String?               @db.VarChar(15)
+  nftAddress          String?               @db.VarChar(50)
+  isDeployed          Boolean               @default(false)
+  transactionDate     DateTime?             @db.Timestamp(0)
+  createdAt           DateTime?             @default(now())
+  updatedAt           DateTime?
+  isEdited            Boolean               @default(false)
+  isLoading           Boolean               @default(false)
+  admin               admin[]
+  admin_reward        admin_reward[]
+  integrated_has_nfts integrated_has_nfts[]
+  reward              reward[]
+  user_has_nfts       user_has_nfts[]
 
   @@index([nftName])
 }
 
 model reward {
-  id          Int     @id @unique(map: "id") @default(autoincrement())
+  id          Int       @id @unique(map: "id") @default(autoincrement())
   nftId       Int?
-  rewardName  String? @db.VarChar(100)
-  description String? @db.Text
-  nfts        nfts?   @relation(fields: [nftId], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "reward_nfts_id_fk")
+  rewardName  String?   @db.VarChar(100)
+  description String?   @db.Text
+  createdAt   DateTime? @default(now())
+  updatedAt   DateTime?
+  nfts        nfts?     @relation(fields: [nftId], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "reward_nfts_id_fk")
 
   @@index([nftId], map: "reward_nfts_id_fk")
+}
+
+model user {
+  id                       Int                        @id @unique(map: "id") @default(autoincrement())
+  snsId                    String?                    @unique(map: "sns_id") @db.VarChar(30)
+  name                     String?                    @db.VarChar(30)
+  profileImage             String?                    @db.VarChar(300)
+  email                    String                     @db.VarChar(50)
+  phone                    String?                    @db.VarChar(45)
+  social                   String?                    @db.VarChar(30)
+  refreshToken             String?                    @db.VarChar(200)
+  isMarketing              Boolean
+  secret                   String?                    @db.VarChar(200)
+  createdAt                DateTime                   @default(now())
+  updatedAt                DateTime
+  isQuest                  Boolean?                   @default(false)
+  admin                    admin[]
+  integrated_nfts          integrated_nfts[]
+  user_contractWallet      user_contractWallet[]
+  user_has_integrated_nfts user_has_integrated_nfts[]
+  user_has_nfts            user_has_nfts[]
+  user_wallet              user_wallet[]
+}
+
+model user_contractWallet {
+  id            Int     @id @unique(map: "user_contractWallet_pk") @default(autoincrement())
+  userId        Int?
+  chainType     String? @db.VarChar(10)
+  walletAddress String? @db.VarChar(100)
+  user          user?   @relation(fields: [userId], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "user_contractWallet_user_id_fk")
+
+  @@index([userId], map: "user_contractWallet_user_id_fk")
+}
+
+model user_has_integrated_nfts {
+  id              Int              @id @unique(map: "id") @default(autoincrement())
+  integratedNftId Int?
+  userId          Int?
+  integrated_nfts integrated_nfts? @relation(fields: [integratedNftId], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "user_has_integrated_nfts_integrated_nfts_id_fk")
+  user            user?            @relation(fields: [userId], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "user_has_integrated_nfts_user_id_fk")
+
+  @@index([integratedNftId], map: "user_has_integrated_nfts_integrated_nfts_id_fk")
+  @@index([userId], map: "user_has_integrated_nfts_user_id_fk")
 }
 
 model user_has_nfts {
   userId  Int
   nftId   Int
+  mintId  Int?
   isMoved Boolean? @default(false)
-  nfts    nfts     @relation(fields: [nftId], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "user_has_nfts_nfts_id_fk")
+  nfts    nfts     @relation(fields: [nftId], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "user_has_nfts_nfts_id_fk")
   user    user     @relation(fields: [userId], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "user_has_nfts_user_id_fk")
 
   @@id([userId, nftId])
@@ -63,14 +152,12 @@ model user_has_nfts {
   @@index([userId], map: "user_has_nfts_user_id_fk")
 }
 
-model admin {
-  id     Int    @id @unique(map: "id") @default(autoincrement())
-  userId Int
-  nftId  Int
-  image  String @db.VarChar(800)
-  nfts   nfts   @relation(fields: [nftId], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "admin_nfts_id_fk")
-  user   user   @relation(fields: [userId], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "admin_user_id_fk")
+model user_wallet {
+  id            Int     @id @unique(map: "id") @default(autoincrement())
+  userId        Int?
+  chainType     String? @db.VarChar(10)
+  walletAddress String? @db.VarChar(100)
+  user          user?   @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "user_wallet_user_id_fk")
 
-  @@index([nftId], map: "admin_nfts_id_fk")
-  @@index([userId], map: "admin_user_id_fk")
+  @@index([userId], map: "user_wallet_user_id_fk")
 }

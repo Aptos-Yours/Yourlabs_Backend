@@ -7,7 +7,6 @@ import {
   FaucetClient,
 } from 'aptos';
 import 'dotenv/config';
-import config from '../config';
 
 import {
   getTransactionDate,
@@ -26,9 +25,8 @@ const faucetClient = new FaucetClient(
   'https://fullnode.devnet.aptoslabs.com',
   'https://faucet.devnet.aptoslabs.com',
 );
-const yoursAccount = new AptosAccount(
-);
-const collectionName ='testCollection';
+const yoursAccount = new AptosAccount();
+const collectionName = 'testCollection';
 const key = ['benefitUri', 'indexList', 'owner', 'maxPropertyVersion'];
 const type = ['string', 'string', 'string', 'string'];
 const deployAptosNFT = async (
@@ -158,8 +156,6 @@ const transferAptosNFT = async (
   await client.waitForTransaction(transferToken, { checkSuccess: true });
 };
 
-
-
 const upgradeNFT = async (
   owner: AptosAccount,
   equipmentName: string,
@@ -267,6 +263,4 @@ const testUpgradeNFT = async () => {
 };
 
 testUpgradeNFT();
-export {
-  upgradeNFT,
-};
+export { deployAptosNFT, upgradeNFT, mintAptosNFT };
